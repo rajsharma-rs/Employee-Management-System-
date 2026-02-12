@@ -12,8 +12,8 @@ import EMSLandingPage from './components/employe dashboard/Landingpage.jsx'
 import ProtectedRoute from './components/utils/ProtectedRoute.jsx'
 const App = () => {
   return (
-    <>
-      
+    
+      <div className='bg-slate-900 w-full min-h-screen m-0 p-0'>
       
 
       <Routes>
@@ -28,7 +28,7 @@ const App = () => {
           <Route path='settings' element={<Settings />} />
         </Route>
       </Routes>
-    </>
+    </div>
   )
 }
 

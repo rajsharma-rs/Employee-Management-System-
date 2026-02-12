@@ -1,5 +1,6 @@
 @import "tailwindcss";
 
 body {
-background-color:linear-gradient(to right, indigo, violet);
+margin: 0;
+padding : 0;
 }
