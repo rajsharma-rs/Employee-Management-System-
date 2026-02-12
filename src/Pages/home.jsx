@@ -1,7 +1,7 @@
 import React from 'react';
 import { useState } from 'react';
 
-export default function EmployeeDashboard() {
+export default function HomePage() {
   // State for user data
   const [user] = useState({
     name: "john",
