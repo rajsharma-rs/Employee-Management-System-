@@ -15,7 +15,7 @@ function Login() {
     };
     
     const handleClick = () => {
-      loginDummy();
+      localStorage.setItem("user", email);
       navigate('/employee');
     };
     
@@ -266,7 +266,7 @@ function Login() {
         </div>
       </div>
     </div>
-  );
-}
+  )}
+
 
 export default Login;

@@ -1,12 +1,21 @@
-import React from 'react';
-import { useState } from 'react';
+import React, { use } from 'react';
+import { useState,useEffect } from 'react';
 
 export default function HomePage() {
   // State for user data
-  const [user] = useState({
-    name: "john",
-    role: "Software Developer"
+  const [user , setUser] = useState({
+    name: "",
+    role: ""
   });
+  useEffect(() => { 
+      const loggeduser = localStorage.getItem("user");
+      if (loggeduser) { const nameOnly = loggeduser.split('@')[0]; // Extract name from email
+        setUser({
+          name: nameOnly,
+          role: "client "
+        });
+      }
+    }, []);
 
   // State for task filter
   const [taskFilter, setTaskFilter] = useState('All Tasks');
