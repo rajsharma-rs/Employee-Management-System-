@@ -1,22 +1,18 @@
 import React, { use } from 'react';
 import { useState,useEffect } from 'react';
-
+import {getUserInfo} from '../components/utils/auth';
 export default function HomePage() {
   // State for user data
   const [user , setUser] = useState({
     name: "",
     role: ""
   });
-  useEffect(() => { 
-      const loggeduser = localStorage.getItem("user");
-      if (loggeduser) { const nameOnly = loggeduser.split('@')[0]; // Extract name from email
-        setUser({
-          name: nameOnly,
-          role: "client "
-        });
-      }
-    }, []);
-
+    useEffect(() => {
+        const user = getUserInfo();
+        if (user) {
+          setUser(user);
+        }
+      }, []);
   // State for task filter
   const [taskFilter, setTaskFilter] = useState('All Tasks');
 

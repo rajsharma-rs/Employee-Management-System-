@@ -2,10 +2,10 @@ import React from 'react';
 
 const STORAGE_KEY = "auth_token";
 
-export const loginDummy = () => {
+export const loginDummy = (email) => {
     const user = {
-        name: "John Doe",
-        email: "john@gmail.com",
+        name: email.split('@')[0], // Extract name from email
+        email: email,
         role: "employee",
         token: "dummy_auth_token_123456"
     };

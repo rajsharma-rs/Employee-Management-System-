@@ -21,7 +21,7 @@ function Login() {
     
     const handleLogin = (e) => {
       e.preventDefault();
-      loginDummy();
+      loginDummy(email);
       navigate('/employee');
 
       
