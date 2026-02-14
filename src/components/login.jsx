@@ -21,8 +21,8 @@ function Login() {
     
     const handleLogin = (e) => {
       e.preventDefault();
-      console.log("Login clicked");
-      handleClick();
+      loginDummy();
+      navigate('/employee');
 
       
     };
@@ -201,7 +201,7 @@ function Login() {
             {/* Login Button */}
             <button
               type="submit"
-              onClick={handleClick}
+              onClick={handleLogin}
               className="w-full px-6 py-3 bg-linear-to-r from-teal-500 to-cyan-600 text-white rounded-xl font-semibold hover:shadow-2xl hover:shadow-teal-500/50 hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 group"
             >
               <span>Sign In</span>
