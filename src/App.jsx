@@ -5,7 +5,7 @@ import Home from './Pages/home.jsx'
 import Login from './components/login.jsx'
 import Tasks  from './Pages/Tasks.jsx'
 import Profile from './Pages/Profile.jsx'
-import Projects from './Pages/Projects.jsx'
+import Attendance from './Pages/Attendance.jsx'
 import Settings from './Pages/Setting.jsx'
 import Signup from './components/employe dashboard/Signup.jsx'
 import EMSLandingPage from './components/employe dashboard/Landingpage.jsx'
@@ -23,7 +23,7 @@ const App = () => {
         <Route path='/employee' element={<ProtectedRoute><EmployeeLayout /></ProtectedRoute>}>
           <Route index element={<Home />} />
           <Route path='Tasks' element={<Tasks />} />
-          <Route path='projects' element={<Projects />} />
+          <Route path='attendance' element={<Attendance />} />
           <Route path='profile' element={<Profile />} />
           <Route path='settings' element={<Settings />} />
         </Route>

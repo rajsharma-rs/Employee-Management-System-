@@ -8,7 +8,7 @@ const Sidebar = () => {
             <nav className=" flex flex-col space-y-4">
                 <NavLink to="" className="hover:bg-gray-700 p-2  rounded">Home</NavLink>
                 <NavLink to="tasks" className="hover:bg-gray-700 p-2 rounded">Tasks</NavLink>
-                <NavLink to="projects" className="hover:bg-gray-700 p-2 rounded">Projects</NavLink>
+                <NavLink to="attendance" className="hover:bg-gray-700 p-2 rounded">Attendance</NavLink>
                 <NavLink to="profile" className="hover:bg-gray-700 p-2 rounded">Profile</NavLink>
                 <NavLink to="settings" className="hover:bg-gray-700 p-2 rounded">Settings</NavLink> 
             </nav>
