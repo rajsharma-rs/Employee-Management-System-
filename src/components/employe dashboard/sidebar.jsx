@@ -10,7 +10,7 @@ const Sidebar = () => {
                 <NavLink to="tasks" className="hover:bg-gray-700 p-2 rounded">Tasks</NavLink>
                 <NavLink to="attendance" className="hover:bg-gray-700 p-2 rounded">Attendance</NavLink>
                 <NavLink to="profile" className="hover:bg-gray-700 p-2 rounded">Profile</NavLink>
-                <NavLink to="settings" className="hover:bg-gray-700 p-2 rounded">Settings</NavLink> 
+                
             </nav>
             
         </div>
