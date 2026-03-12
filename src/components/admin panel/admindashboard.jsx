@@ -9,7 +9,7 @@ import  { useState, useEffect } from 'react';
 
 export default function AdminDashboard() {
     const [mounted, setMounted] = useState(false);
-    useEffect(() => { setMounted(true); }, []);
+    useEffect(() => { setMounted(true); }, []); 
   const [activeTab, setActiveTab] = useState('overview');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 

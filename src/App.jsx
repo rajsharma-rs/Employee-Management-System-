@@ -16,8 +16,8 @@ const App = () => {
       <div className='bg-slate-900 w-full min-h-screen m-0 p-0'>
       
 
-      <Routes>\
-        <Route path='/admin' element={<AdminDashboard />} />
+      <Routes>
+        <Route path='/admin' element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
         <Route path='/' element={<EMSLandingPage />} />
         <Route path='/signup' element={<Signup />} />
           <Route path='/login' element={<Login />} />

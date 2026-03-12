@@ -9,6 +9,28 @@ export const loginDummy = (email) => {
         role: "employee",
         token: "dummy_auth_token_123456"
     };
+
+    const admin = [
+     {
+        name: email.split('@')[0], // Extract name from email
+        email: "rsharma37852@gmail.com",
+        role: "admin",
+        token: "dummy_auth_token_123456"
+    },
+    {
+        name: email.split('@')[0], // Extract name from email
+        email: "heyyamay@gmail.com",
+        role: "admin",
+        token: "dummy_auth_token_123456"
+
+    }
+];
+
+const isAdmin = admin.some(adminUser => adminUser.email === email);
+console.log("Is Admin:", isAdmin);
+if (isAdmin) {
+    user.role = "admin";
+}
     localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
     
 };
