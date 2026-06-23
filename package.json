@@ -1,0 +1,20 @@
+{
+  "name": "ems-backend",
+  "version": "1.0.0",
+  "description": "backend file of my mern stack project ems ",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "raj sharma",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.5.0",
+    "validator": "^13.15.35",
+    "validators": "^0.3.1"
+  }
+}
