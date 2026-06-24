@@ -3,9 +3,11 @@ const express = require ('express')
 const app = express();
 const validator = require('validator');
 const bcrypt = require('bcrypt');
-const { validateUser } = require('./utils/validtation');
-
+const { validateUser } = require('../utils/validtation');
+const cookieParser = require('cookie-parser');
+const jwt = require('jsonwebtoken');
  const User = require('./db');
+const { HttpProxy } = require('vite');
 
 const PORT = 3131; 
 
@@ -16,6 +18,10 @@ app.listen(
 );
 
 app.use(express.json());
+app.use(cookieParser());
+
+
+
 
 app.post('/signup', async (req, res) => { 
     try {
@@ -46,9 +52,16 @@ app.post('/login', async (req, res) => {
         if (!user) {
             throw new Error('User not found');
         }
+        
         const isPasswordValid = await bcrypt.compare(password, user.password);
-        if (isPasswordValid) {
-            res.send('Login successful');
+        if (isPasswordValid) {  
+
+            const token = jwt.sign({ _id: user._id }, 'ems$6020');
+            console.log(token);
+            res.cookie('token', token , { httpOnly: true , secure: false});
+            
+            res.send('cookies set!!!!!!');
+            
         } else {
             throw new Error('Invalid password');
         }
@@ -57,3 +70,26 @@ app.post('/login', async (req, res) => {
     }
 });
  
+
+app.get('/profile', async (req, res) => {
+    try {
+    const cookie = req.cookies;
+    const { token } = cookie;
+    console.log("raw token : ", JSON.stringify(token));
+    if (!token) { 
+        throw new Error('No token found');
+    }
+console.log("token received is " + token); 
+    const decoded = jwt.verify(token, 'ems$6020');
+    const {_id} = decoded;
+    console.log("logged in user is " + _id);
+
+    const user = await User.findById(_id);
+    if (!user) {
+        throw new Error('User not found');
+    }
+    res.json(user);
+    } catch (err) {
+        res.status(400).send({ "error": err.message });
+    }
+});
