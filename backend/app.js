@@ -17,4 +17,4 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use('/auth', require('./src/routers/authentication'));
-
+app.use('/attendance', require('./src/routers/attendanceroute'));
