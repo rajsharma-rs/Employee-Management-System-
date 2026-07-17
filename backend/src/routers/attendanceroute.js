@@ -43,4 +43,14 @@ attendanceroute.post('/clockout', auth, async (req, res) => {
     }
 });
 
+attendanceroute.get('/history', auth, async (req, res) => {
+    try {
+        const empolyeeId = req.user.id;
+        const attendanceHistory = await Attendance.find({ employeeId: empolyeeId })
+        .sort({ date: -1 });
+        res.status(200).json({ attendanceHistory });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
 module.exports = attendanceroute;
