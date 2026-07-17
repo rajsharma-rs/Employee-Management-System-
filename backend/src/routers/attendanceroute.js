@@ -25,4 +25,22 @@ attendanceroute.post('/clockin', auth, async (req, res) => {
     }
 });
 
+attendanceroute.post('/clockout', auth, async (req, res) => {
+    try {
+        const empolyeeId = req.user.id;
+        const today = new Date();
+        const date = new Date().toISOString().split('T')[0];
+        const attendance = await Attendance.findOne({ employeeId: empolyeeId, date: date });
+        if (!attendance) {
+            return res.status(400).json({ message: 'You have not clocked in today' });
+        }
+        attendance.clockOut = today;
+        attendance.status = 'completed';
+        await attendance.save();
+        res.status(200).json({ message: 'Clock out recorded successfully', attendance });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
 module.exports = attendanceroute;
