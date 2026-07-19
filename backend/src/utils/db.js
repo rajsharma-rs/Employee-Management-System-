@@ -6,10 +6,14 @@ mongoose.connect("mongodb+srv://RAJSHARMA:sarmaa3109@cluster0.m6lkti4.mongodb.ne
 .catch(err => console.log("error;" , err.message));
 
 const userSchema = new mongoose.Schema({
-    name:{
+    firstName: {
         type: String,
         required: true
         
+    },
+    lastName: {
+        type: String,
+        required: true
     },
     age: {
         type: Number,

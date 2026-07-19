@@ -3,25 +3,37 @@ const authRoutes = express.Router();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { validateUser } = require('../utils/validation');
-const User = require('../db');
+const User = require('../utils/db');
 const auth = require('../middlewares/auth');
+const Profile = require('../utils/profileschema');
 
 authRoutes.post('/signup', async (req, res) => { 
     try {
         const validate = validateUser(req);
-        const { name, age, email } = req.body;
+        const { firstName, lastName, age, email } = req.body;
         const password = req.body.password;
 
         const passwordHash = await bcrypt.hash(password, 10);
 
         const user = new User({
-            name,
-            age, 
+            firstName,
+            lastName,
+            age,
             email,
             password: passwordHash
         });
 
         await user.save();
+
+        const profile = new Profile({
+            userId: user._id,
+            bio: '',
+            skillsAndExpertise: [],
+            role: '',
+            profilepicture: '',
+            avatarcolor: ''
+        });
+        await profile.save();
         res.status(201).json({ message: 'User created successfully' });
     } catch (error) {
         res.status(400).json({ error: error.message });
