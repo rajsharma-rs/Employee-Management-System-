@@ -14,6 +14,10 @@ const userSchema = new mongoose.Schema({
         type: Number,
         default: null
     },
+    role: {
+        type: String,
+        default: "employee"
+    },
     email: {
         type: String,
         required: true,

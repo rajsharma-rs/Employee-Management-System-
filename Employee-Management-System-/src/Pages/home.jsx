@@ -1,6 +1,10 @@
 import React, { use } from 'react';
 import { useState,useEffect } from 'react';
 import {getUserInfo} from '../components/utils/auth';
+
+
+const user = JSON.parse(localStorage.getItem("auth_token"));
+const username = user?.email?.split('@')[0] ;
 export default function HomePage() {
   // State for user data
   const [user , setUser] = useState({
@@ -123,8 +127,8 @@ export default function HomePage() {
 
   const filteredTasks = getFilteredTasks();
 
-  // Get first name from full name
-  const getFirstName = (fullName) => {
+  // Get email from full name
+  const getemail = (fullName) => {
     return fullName.split(' ')[0];
   };
 
@@ -196,7 +200,7 @@ export default function HomePage() {
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div>
               <h1 className="text-5xl font-bold text-white mb-2">
-                Welcome back, {getFirstName(user.name)}! 👋
+                Welcome back, {getemail(username)}! 👋
               </h1>
               <p className="text-gray-400 text-lg">Here's your overview for today • {user.role}</p>
             </div>
@@ -209,7 +213,7 @@ export default function HomePage() {
               </button>
               <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-xl px-4 py-3 flex items-center gap-3">
                 <div className="w-10 h-10 bg-linear-to-br from-teal-400 to-cyan-600 rounded-full flex items-center justify-center font-semibold text-white">
-                  {user.name.split(' ').map(n => n[0]).join('')}
+                  {username.split(' ').map(n => n[0]).join('')}
                 </div>
                 <div>
                   <p className="text-white font-semibold text-sm">{user.name}</p>

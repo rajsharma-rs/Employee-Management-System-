@@ -17,7 +17,7 @@ authRoutes.post('/signup', async (req, res) => {
 
         const user = new User({
             fullName,
-            
+        
             email,
             password: passwordHash
         });
@@ -54,7 +54,11 @@ authRoutes.post('/login', async (req, res) => {
             console.log(token);
             res.cookie('token', token , { httpOnly: true , secure: false});
             
-            res.send('cookies set!!!!!!');
+            res.send({
+                email: user.email,
+                token,
+                role: user.role
+            });
             
         } else {
             throw new Error('Invalid password');

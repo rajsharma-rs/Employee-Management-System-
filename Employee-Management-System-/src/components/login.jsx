@@ -1,8 +1,9 @@
 import React from 'react'
 import { useState } from 'react';
 import {Link} from 'react-router-dom';
-import {loginDummy} from './utils/auth.jsx';
+
 import {useNavigate} from 'react-router-dom';
+import api from '/src/api.js';
  
 
 function Login() { 
@@ -10,33 +11,22 @@ function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
-    
-  
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
       e.preventDefault();
+      try {
+        const response = await api.post('/auth/login', { email, password }, { withCredentials: true });
+        localStorage.setItem("auth_token", JSON.stringify(response.data));
+        const user = response.data;
+        if (user.role === "admin") {
+          navigate('/admin');
+        } else if (user.role === "employee") {
+          navigate('/employee');
+        }
+      } catch (error) {
+        console.error("Login error:", error);
+      }
     };
-    
-    const handleClick = () => {
-      loginDummy(email);
-    };
-    
-    const handleLogin = (e) => {
-      e.preventDefault();
-      console.log("Login button clicked with email:", email);
 
-      loginDummy(email);
-
-      const user = JSON.parse(localStorage.getItem("auth_token"));
-
-    if (user.role === "admin") { 
-      navigate('/admin');
-    } else if (user.role === "employee") {
-      navigate('/employee');
-    }
-      
-
-      
-    };
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-6 overflow-hidden relative">
       <style>{`
@@ -155,7 +145,7 @@ function Login() {
             <p className="text-gray-400">Sign in to your account to continue</p>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-5">
             {/* Email Input */}
             <div className="animate-fade-in-up delay-200">
               <label className="block text-gray-300 font-medium mb-2 text-sm">Email Address</label>
@@ -212,7 +202,7 @@ function Login() {
             {/* Login Button */}
             <button
               type="submit"
-              onSubmit={handleLogin}
+              onSubmit={handleSubmit}
               className="w-full px-6 py-3 bg-linear-to-r from-teal-500 to-cyan-600 text-white rounded-xl font-semibold hover:shadow-2xl hover:shadow-teal-500/50 hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 group"
             >
               <span>Sign In</span>

@@ -17,7 +17,7 @@ const profileSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        default: ""
+        default: "employee"
     },
     profilepicture: {
         type: String,
