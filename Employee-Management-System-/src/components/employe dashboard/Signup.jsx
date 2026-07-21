@@ -1,21 +1,28 @@
 import React from 'react';
 import Login from '../login.jsx';
 import { useState } from 'react';
+import api from '../../api.js';
 
  function Signup() {
   const [fullname, setFullname] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [message, setMessage] = useState('');
   
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
       e.preventDefault();
-      
-      // Handle login logic here
-    };
-  const handleClick = () => {
-      console.log('form submitted');
-    };
-     
+      try {
+        const response = await api.post('/auth/signup', {
+          fullName: fullname,
+          email: email,
+          password: password
+        });
+        setMessage('Signup successful:', response.data);
+        // You can redirect the user to the login page or show a success message here
+      } catch (error) {
+        setMessage && setMessage('Signup failed:', error.response.data);
+      }
+    }
   return (
     <div className="min-h-screen bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-6 overflow-hidden relative">
       <style>{`
@@ -189,23 +196,7 @@ import { useState } from 'react';
               </div>
             </div>
 
-            {/* Confirm Password Input */}
-            <div className="animate-fade-in-up delay-400">
-              <label className="block text-gray-300 font-medium mb-2 text-sm">Confirm Password</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <input
-                  type="password"
-                  placeholder="••••••••"
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-slate-900/50 border border-slate-700/50 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-teal-500/50 focus:ring-2 focus:ring-teal-500/20 transition-all duration-300"
-                />
-              </div>
-            </div>
+           
 
             {/* Terms & Conditions Checkbox */}
             <div className="flex items-start gap-3 animate-fade-in-up delay-400">
@@ -222,15 +213,23 @@ import { useState } from 'react';
             {/* Signup Button */}
             <button
               type="submit"
-              onClick ={handleClick}
+              onClick={handleSubmit}
               className="w-full px-6 py-3 bg-linear-to-r from-teal-500 to-cyan-600 text-white rounded-xl font-semibold hover:shadow-2xl hover:shadow-teal-500/50 hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2 group"
             >
+              
               <span>Create Account</span>
               <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>
             </button>
           </form>
+
+
+                 {message && (
+  <p className="absolute bottom-50  left-40 bg-linear-to-r from-teal-500 to-cyan-600  text-white text-sm px-3 py-1 rounded-xl duration-100ms transition-fade-in-out">
+    {message}
+  </p>
+)}
 
           {/* Divider */}
           <div className="flex items-center gap-4 my-6">

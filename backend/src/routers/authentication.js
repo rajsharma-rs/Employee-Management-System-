@@ -10,14 +10,14 @@ const Profile = require('../utils/profileschema');
 authRoutes.post('/signup', async (req, res) => { 
     try {
         const validate = validateUser(req);
-        const { fullName, age, email } = req.body;
+        const { fullName,  email} = req.body;
         const password = req.body.password;
 
         const passwordHash = await bcrypt.hash(password, 10);
 
         const user = new User({
             fullName,
-            age,
+            
             email,
             password: passwordHash
         });

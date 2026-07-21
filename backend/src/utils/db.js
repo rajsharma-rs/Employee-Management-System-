@@ -12,7 +12,7 @@ const userSchema = new mongoose.Schema({
     },
     age: {
         type: Number,
-        required: true
+        default: null
     },
     email: {
         type: String,
