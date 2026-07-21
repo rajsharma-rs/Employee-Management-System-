@@ -6,12 +6,9 @@ import {LogOut , getUserInfo} from '../utils/auth.jsx';
 
 const EmployeeLayout = () => {
   
-  const navigate = useNavigate();
+  
 
-  const handleLogout = () => {
-    LogOut();
-    navigate('/login');
-  };
+  
   return (
     <div className='flex gap-2 h-screen'>
       <Sidebar />
