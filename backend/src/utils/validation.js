@@ -6,8 +6,8 @@ const validatePassword = (password) => {
 };
 
 const validateUser = (req) => {
-    const { firstName, lastName, age, email, password } = req.body;
-    if (!firstName || !lastName || !age || !email || !password) {
+    const { fullName, age, email, password } = req.body;
+    if (!fullName || !age || !email || !password) {
         throw new Error('All fields are required');
     }
     if (typeof email !== 'string' || !email.includes('@')) {
