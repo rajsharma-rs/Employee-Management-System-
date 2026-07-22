@@ -128,8 +128,8 @@ export default function HomePage() {
   const filteredTasks = getFilteredTasks();
 
   // Get email from full name
-  const getemail = (fullName) => {
-    return fullName.split(' ')[0];
+  const getEmail = (fullName) => {
+    return fullName?.split(' ')[0]|| '';
   };
 
   // Calculate stats
@@ -200,7 +200,7 @@ export default function HomePage() {
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div>
               <h1 className="text-5xl font-bold text-white mb-2">
-                Welcome back, {getemail(username)}! 👋
+                Welcome back, {getEmail(username)}! 👋
               </h1>
               <p className="text-gray-400 text-lg">Here's your overview for today • {user.role}</p>
             </div>

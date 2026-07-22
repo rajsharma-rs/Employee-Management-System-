@@ -34,7 +34,7 @@ const Sidebar = () => {
                 
             </nav>
             <button onClick={handleLogout} 
-            className="mt-8 bg-red-600 hover:bg-red-700 p-2 rounded w-full">Logout</button>
+            className="mt-8 hover:bg-gray-700 p-2 rounded w-full">Logout</button>
         </div>
     );
 };

@@ -1,4 +1,5 @@
 import React from 'react'
+import api from '../api.js';
 
 import { useState, useEffect } from "react";
 
@@ -6,35 +7,17 @@ const MONTH_NAMES = ["January","February","March","April","May","June","July","A
 const DAY_NAMES   = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 
 // Generate last 30 days of mock attendance history
-const generateHistory = () => {
+const generateHistory = async () => {
+  try {
+    const res = await api.get('/attendance/history', { withCredentials: true });
   const history = {};
   const today = new Date();
-  for (let i = 1; i <= 30; i++) {
-    const d = new Date(today);
-    d.setDate(today.getDate() - i);
-    const key = d.toISOString().split("T")[0];
-    const day = d.getDay();
-    if (day === 0 || day === 6) continue; // skip weekends
-    const rand = Math.random();
-    if (rand < 0.75) {
-      const h = 8 + Math.floor(Math.random() * 2);
-      const m = Math.floor(Math.random() * 59).toString().padStart(2,"0");
-      const outH = 17 + Math.floor(Math.random() * 2);
-      const outM = Math.floor(Math.random() * 59).toString().padStart(2,"0");
-      const late = h > 9 || (h === 9 && parseInt(m) > 5);
-      history[key] = {
-        status: late ? "late" : "present",
-        checkIn:  `${h.toString().padStart(2,"0")}:${m} AM`,
-        checkOut: `${outH}:${outM} PM`,
-        hours: `${outH - h}h ${outM}m`,
-      };
-    } else if (rand < 0.85) {
-      history[key] = { status: "absent",  checkIn: "--", checkOut: "--", hours: "0h" };
-    } else {
-      history[key] = { status: "leave",   checkIn: "--", checkOut: "--", hours: "0h" };
-    }
+  
+  return res.data.history;
+  } catch (error) {
+    console.error("Error fetching attendance history:", error);
+    return {};
   }
-  return history;
 };
 
 const statusCfg = {
@@ -50,7 +33,7 @@ export default function AttendancePage() {
   const today     = new Date();
   const todayKey  = today.toISOString().split("T")[0];
 
-  const [history, setHistory]           = useState(generateHistory);
+  const [history, setHistory]           = useState();
   const [checkedIn, setCheckedIn]       = useState(false);
   const [checkInTime, setCheckInTime]   = useState(null);
   const [checkOutTime, setCheckOutTime] = useState(null);
@@ -81,12 +64,25 @@ export default function AttendancePage() {
     return () => clearInterval(t);
   }, [checkedIn, checkOutTime]);
 
+  // Fetch attendance history on mount
+  useEffect(() => { 
+    generateHistory().then(data => 
+      setHistory(data)
+    );
+  }, []);
+
   const showToast = (msg, type="success") => {
     setToast({ msg, type });
     setTimeout(() => setToast(null), 3000);
   };
 
-  const handleCheckIn = () => {
+  const handleCheckIn = async () => {
+    try {
+      await api.post('/attendance/clockin', { time: new Date() }, { withCredentials: true });
+    } catch (error) {
+      console.error("Error checking in:", error);
+      showToast("❌ Failed to check in.", "error");
+    };
     const now = new Date();
     setCheckInTime(now);
     setCheckedIn(true);
@@ -94,7 +90,13 @@ export default function AttendancePage() {
     showToast("✅ Checked in successfully!");
   };
 
-  const handleCheckOut = () => {
+  const handleCheckOut = async () => {
+    try {
+      await api.post('/attendance/clockout', { time: new Date() }, { withCredentials: true });
+    } catch (error) {
+      console.error("Error checking out:", error);
+      showToast("❌ Failed to check out.", "error");
+    };
     const now = new Date();
     setCheckOutTime(now);
     const secs = elapsed;
@@ -128,8 +130,10 @@ export default function AttendancePage() {
   };
 
   // Stats
-  const thisMonthKeys = Object.keys(history).filter(k => k.startsWith(`${calYear}-${(calMonth+1).toString().padStart(2,"0")}`));
-  const allKeys       = Object.keys(history);
+const thisMonthKeys = Object.keys(history || {}).filter(
+  k => k.startsWith(`${calYear}-${(calMonth + 1).toString().padStart(2, "0")}`)
+);
+  const allKeys       = Object.keys(history || {});
   const presentCount  = allKeys.filter(k => ["present","late"].includes(history[k].status)).length;
   const absentCount   = allKeys.filter(k => history[k].status === "absent").length;
   const leaveCount    = allKeys.filter(k => history[k].status === "leave").length;
@@ -146,8 +150,8 @@ export default function AttendancePage() {
     const d   = new Date(year, month, day);
     const dow = d.getDay();
     if (dow === 0 || dow === 6) return "weekend";
-    if (history[key]) return history[key].status;
-    if (key === todayKey) return checkedIn ? (history[todayKey]?.status || "present") : null;
+    if (history?.[key]) return history[key].status;
+    if (key === todayKey) return checkedIn ? (history?.[todayKey]?.status || "present") : null;
     return null;
   };
 
@@ -163,7 +167,7 @@ export default function AttendancePage() {
 
   const inputCls  = "w-full bg-slate-800/60 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500/50 transition-all text-sm";
   const isToday   = (d) => d === todayKey;
-  const todayEntry = history[todayKey];
+  const todayEntry = history?.[todayKey];
 
   return (
     <>
@@ -508,7 +512,7 @@ export default function AttendancePage() {
             <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6 fade-in">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-2xl font-bold text-white">Attendance History</h2>
-                <span className="text-gray-400 text-sm">{Object.keys(history).length} records</span>
+                <span className="text-gray-400 text-sm">{Object.keys(history || {})?.length} records</span>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full">
@@ -520,7 +524,7 @@ export default function AttendancePage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/5">
-                    {Object.entries(history).sort(([a],[b]) => b.localeCompare(a)).map(([date, entry]) => {
+                    {Object.entries(history || {})?.sort(([a],[b]) => b.localeCompare(a)).map(([date, entry]) => {
                       const d   = new Date(date);
                       const cfg = statusCfg[entry.status];
                       return (
