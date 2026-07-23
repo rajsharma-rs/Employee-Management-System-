@@ -5,19 +5,23 @@ const Task = require('../utils/taskschema');
 
 tasksroute.post('/addtask', auth, async (req, res) => {
     try {
-        const { title, description, priority, dueDate } = req.body;
+        const { title, description, priority, category, dueDate } = req.body;
         const assignedby = req.user.id;
         const newTask = new Task({
             title,
             description,
             priority,
             dueDate,
+            category,
             assignedby
         });
         await newTask.save();
         res.status(201).json({ message: 'Task added successfully', task: newTask });
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error(error);
+        return res.status(500).json({
+            message: error.message
+        });
     }
 });
 

@@ -11,7 +11,7 @@ const taskSchema = new mongosse.Schema({
     },  
     priority: {
         type: String,
-        enum: ['low', 'medium', 'high'],
+        enum: ['Low', 'Medium', 'High'],
         default: 'medium',
     },
     status: {
@@ -22,6 +22,11 @@ const taskSchema = new mongosse.Schema({
     dueDate: {
         type: Date,
         required: true, 
+    },
+    category:{
+        type: String,
+        default: "",
+        required:true 
     },
     assignedby: {
         type: mongosse.Schema.Types.ObjectId,

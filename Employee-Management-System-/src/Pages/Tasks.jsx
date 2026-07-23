@@ -1,6 +1,6 @@
-import React from 'react'
-
-import { useState } from "react";
+import React from "react";
+import api from '../api'
+import { useState , useEffect} from "react";
 
 const initialTasks = [
   {
@@ -140,6 +140,24 @@ const statusConfig = {
   const emptyForm = { title: "", description: "", priority: "Medium", status: "pending", dueDate: "", category: "", assignedBy: "" };
   const [form, setForm] = useState(emptyForm);
 
+  const fetchTasks = async() =>  {
+   try {
+    const res = await api.get('/task/gettasks', {
+      withCredentials: true,
+    });
+    if (res.data.tasks?.length >0) {
+      setTasks(res.data.tasks);
+    }
+   } catch (error) {
+    console.error("task invalid", error);
+   } 
+  };
+
+useEffect(() => {
+  fetchTasks();
+}, []
+);
+
   /*Derived filtered tasks*/ 
   const filtered = tasks.filter(t => {
     const matchStatus   = filterStatus   === "all" || t.status   === filterStatus;
@@ -161,9 +179,9 @@ const statusConfig = {
   const toggleSubtask = (taskId, subId) => {
     const update = (t) =>
       t.id === taskId
-        ? { ...t, subtasks: t.subtasks.map(s => s.id === subId ? { ...s, done: !s.done } : s) }
+        ? { ...t, subtasks: t.subtasks?.map(s => s.id === subId ? { ...s, done: !s.done } : s) }
         : t;
-    setTasks(tasks.map(update));
+    setTasks(tasks?.map(update));
     if (selectedTask?.id === taskId) setSelectedTask(update(selectedTask));
   };
 
@@ -196,27 +214,34 @@ const statusConfig = {
     if (selectedTask?.id === taskId) setSelectedTask(null);
     setShowDeleteConfirm(null);
   };
-
-  const saveTask = () => {
+      const saveTask = async () => {
     if (!form.title.trim()) return;
+    
     if (editingTask) {
       setTasks(tasks.map(t => t.id === editingTask ? { ...t, ...form } : t));
       if (selectedTask?.id === editingTask) setSelectedTask(prev => ({ ...prev, ...form }));
     } else {
-      const newTask = {
-        ...form,
-        id: Date.now(),
-        createdAt: new Date().toISOString().split("T")[0],
-        subtasks: [],
-        comments: [],
-      };
-      setTasks([...tasks, newTask]);
+      try {
+        // Send the form data to your backend API
+        const res = await api.post('/task/addtask', form);
+        
+        // Use the task returned from the server (which includes DB id, assignedby, etc.)
+        const savedTask = res.data.task;
+        setTasks([...tasks, savedTask]);
+        
+      } catch (error) {
+        console.error("task is not valid", error);
+        return; // Stop execution if the request failed so local state doesn't desync
+      }
     }
+    
     setForm(emptyForm);
     setEditingTask(null);
     setShowAddModal(false);
   };
 
+ 
+      
   const openEdit = (task) => {
     setForm({ title: task.title, description: task.description, priority: task.priority,
               status: task.status, dueDate: task.dueDate, category: task.category, assignedBy: task.assignedBy });
@@ -283,7 +308,7 @@ const statusConfig = {
               { label:"In Progress",   value:stats.inProgress, color:"from-cyan-400 to-blue-600",    icon:"M13 10V3L4 14h7v7l9-11h-7z", cls:"d2" },
               { label:"Completed",     value:stats.completed,  color:"from-green-400 to-emerald-600",icon:"M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z", cls:"d3" },
               { label:"Pending",       value:stats.pending,    color:"from-purple-400 to-pink-600",  icon:"M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z", cls:"d4" },
-            ].map(s => (
+            ]?.map(s => (
               <div key={s.label} className={`bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-5 hover:-translate-y-1 transition-all fade-in-up ${s.cls}`}>
                 <div className="flex items-center justify-between mb-3">
                   <div className={`w-12 h-12 bg-linear-to-br ${s.color} rounded-xl flex items-center justify-center`}>
@@ -371,9 +396,9 @@ const statusConfig = {
             </div>
           ) : (
             <div className={view === "grid" ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" : "flex flex-col gap-4"}>
-              {filtered.map((task, i) => (
+              {filtered?.map((task, i) => (
                 <div
-                  key={task.id}
+                  key={task._id}
                   className={`bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6 hover:bg-white/8 hover:-translate-y-1 hover:border-teal-500/30 transition-all cursor-pointer fade-in-up`}
                   style={{ animationDelay: `${i * 0.05}s`, opacity: 0 }}
                   onClick={() => setSelectedTask(task)}
@@ -394,7 +419,7 @@ const statusConfig = {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                         </svg>
                       </button>
-                      <button onClick={() => setShowDeleteConfirm(task.id)} className="p-1.5 text-gray-400 hover:text-red-400 transition-colors">
+                      <button onClick={() => setShowDeleteConfirm(task._id)} className="p-1.5 text-gray-400 hover:text-red-400 transition-colors">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
@@ -407,7 +432,7 @@ const statusConfig = {
                   <p className="text-gray-400 text-sm mb-4 line-clamp-2">{task.description}</p>
 
                   {/* Progress */}
-                  {task.subtasks.length > 0 && (
+                  {task.subtasks?.length > 0 && (
                     <div className="mb-4">
                       <div className="flex justify-between text-xs text-gray-400 mb-1">
                         <span>Progress</span>
@@ -441,7 +466,7 @@ const statusConfig = {
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
                       </svg>
-                      {task.comments.length}
+                      {task.comments?.length}
                     </span>
                   </div>
                 </div>
@@ -498,7 +523,7 @@ const statusConfig = {
                     { label:"Category",   value:selectedTask.category,   icon:"M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" },
                     { label:"Assigned By",value:selectedTask.assignedBy, icon:"M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" },
                     { label:"Created",    value:selectedTask.createdAt,  icon:"M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" },
-                  ].map(m => (
+                  ]?.map(m => (
                     <div key={m.label} className="bg-white/5 rounded-xl p-4 border border-white/10">
                       <div className="flex items-center gap-2 mb-1">
                         <svg className="w-4 h-4 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -515,7 +540,7 @@ const statusConfig = {
                 <div className="bg-white/5 rounded-xl p-4 border border-white/10">
                   <p className="text-gray-400 text-sm mb-3">Change Status</p>
                   <div className="flex gap-2 flex-wrap">
-                    {(["pending","in-progress","completed"]).map(s => (
+                    {(["pending","in-progress","completed"])?.map(s => (
                       <button
                         key={s}
                         onClick={() => changeStatus(selectedTask.id, s)}
@@ -533,11 +558,11 @@ const statusConfig = {
                 <div className="bg-white/5 rounded-xl p-5 border border-white/10">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-white font-bold text-lg">Subtasks</h3>
-                    <span className="text-gray-400 text-sm">{selectedTask.subtasks.filter(s=>s.done).length}/{selectedTask.subtasks.length} done</span>
+                    <span className="text-gray-400 text-sm">{selectedTask.subtasks?.filter(s=>s.done).length}/{selectedTask.subtasks?.length} done</span>
                   </div>
 
                   {/* Progress bar */}
-                  {selectedTask.subtasks.length > 0 && (
+                  {selectedTask.subtasks?.length > 0 && (
                     <div className="mb-4">
                       <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden">
                         <div className="h-full bg-linear-to-r from-teal-500 to-cyan-500 rounded-full transition-all duration-500"
@@ -548,7 +573,7 @@ const statusConfig = {
                   )}
 
                   <div className="space-y-2 mb-4">
-                    {selectedTask.subtasks.map(sub => (
+                    {selectedTask.subtasks?.map(sub => (
                       <div key={sub.id} className="flex items-center gap-3 p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-all cursor-pointer"
                         onClick={() => toggleSubtask(selectedTask.id, sub.id)}>
                         <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${sub.done ? "bg-teal-500 border-teal-500" : "border-gray-500"}`}>
@@ -581,14 +606,14 @@ const statusConfig = {
 
                 {/* Comments */}
                 <div className="bg-white/5 rounded-xl p-5 border border-white/10">
-                  <h3 className="text-white font-bold text-lg mb-4">Comments ({selectedTask.comments.length})</h3>
+                  <h3 className="text-white font-bold text-lg mb-4">Comments ({selectedTask.comments?.length})</h3>
 
                   <div className="space-y-3 mb-4">
-                    {selectedTask.comments.length === 0 && (
+                    {selectedTask.comments?.length === 0 && (
                       <p className="text-gray-500 text-sm text-center py-4">No comments yet</p>
                     )}
-                    {selectedTask.comments.map(c => (
-                      <div key={c.id} className="bg-white/5 rounded-xl p-4 border border-white/10">
+                    {selectedTask.comments?.map(c => (
+                      <div key={c._id} className="bg-white/5 rounded-xl p-4 border border-white/10">
                         <div className="flex items-center gap-2 mb-2">
                           <div className="w-7 h-7 bg-linear-to-br from-teal-400 to-cyan-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
                             {c.author[0]}
@@ -730,4 +755,4 @@ const statusConfig = {
   );
 }
 
-export default Tasks
+export default Tasks;
