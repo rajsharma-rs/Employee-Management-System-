@@ -178,7 +178,7 @@ useEffect(() => {
   /*Handlers*/ 
   const toggleSubtask = (taskId, subId) => {
     const update = (t) =>
-      t.id === taskId
+      t._id === taskId
         ? { ...t, subtasks: t.subtasks?.map(s => s.id === subId ? { ...s, done: !s.done } : s) }
         : t;
     setTasks(tasks?.map(update));
@@ -206,18 +206,18 @@ useEffect(() => {
   const addComment = (taskId) => {
     if (!newComment.trim()) return;
     const comment = { id: Date.now(), author: "You", text: newComment.trim(), time: "Just now" };
-    const update = (t) => t.id === taskId ? { ...t, comments: [...t.comments, comment] } : t;
+    const update = (t) => t._id === taskId ? { ...t, comments: [...t.comments, comment] } : t;
     setTasks(tasks.map(update));
-    if (selectedTask?.id === taskId) setSelectedTask(prev => ({ ...prev, comments: [...prev.comments, comment] }));
+    if (selectedTask?._id === taskId) setSelectedTask(prev => ({ ...prev, comments: [...prev.comments, comment] }));
     setNewComment("");
   };
 
   const addSubtask = (taskId) => {
     if (!newSubtask.trim()) return;
     const sub = { id: Date.now(), title: newSubtask.trim(), done: false };
-    const update = (t) => t.id === taskId ? { ...t, subtasks: [...t.subtasks, sub] } : t;
+    const update = (t) => t._id === taskId ? { ...t, subtasks: [...t.subtasks, sub] } : t;
     setTasks(tasks.map(update));
-    if (selectedTask?.id === taskId) setSelectedTask(prev => ({ ...prev, subtasks: [...prev.subtasks, sub] }));
+    if (selectedTask?._id === taskId) setSelectedTask(prev => ({ ...prev, subtasks: [...prev.subtasks, sub] }));
     setNewSubtask("");
   };
 
@@ -426,7 +426,7 @@ useEffect(() => {
             <div className={view === "grid" ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" : "flex flex-col gap-4"}>
               {filtered?.map((task, i) => (
                 <div
-                  key={task._id}
+                  key={task.id}
                   className={`bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6 hover:bg-white/8 hover:-translate-y-1 hover:border-teal-500/30 transition-all cursor-pointer fade-in-up`}
                   style={{ animationDelay: `${i * 0.05}s`, opacity: 0 }}
                   onClick={() => setSelectedTask(task)}
@@ -551,7 +551,7 @@ useEffect(() => {
                     { label:"Category",   value:selectedTask.category,   icon:"M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" },
                     { label:"Assigned By",value:selectedTask.assignedBy, icon:"M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" },
                     { label:"Created",    value:selectedTask.createdAt,  icon:"M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" },
-                  ]?.map(m => (
+                  ]?.map((m) => (
                     <div key={m.label} className="bg-white/5 rounded-xl p-4 border border-white/10">
                       <div className="flex items-center gap-2 mb-1">
                         <svg className="w-4 h-4 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -603,7 +603,7 @@ useEffect(() => {
                   <div className="space-y-2 mb-4">
                     {selectedTask.subtasks?.map(sub => (
                       <div key={sub.id} className="flex items-center gap-3 p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-all cursor-pointer"
-                        onClick={() => toggleSubtask(selectedTask.id, sub.id)}>
+                        onClick={() => toggleSubtask(selectedTask._id, sub.id)}>
                         <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${sub.done ? "bg-teal-500 border-teal-500" : "border-gray-500"}`}>
                           {sub.done && (
                             <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -621,11 +621,11 @@ useEffect(() => {
                     <input
                       value={newSubtask}
                       onChange={e => setNewSubtask(e.target.value)}
-                      onKeyDown={e => e.key === "Enter" && addSubtask(selectedTask.id)}
+                      onKeyDown={e => e.key === "Enter" && addSubtask(selectedTask._id)}
                       placeholder="Add a subtask..."
                       className="flex-1 bg-slate-800/50 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500/50"
                     />
-                    <button onClick={() => addSubtask(selectedTask.id)}
+                    <button onClick={() => addSubtask(selectedTask._id)}
                       className="px-4 py-2.5 bg-linear-to-r from-teal-500 to-cyan-600 text-white rounded-xl text-sm font-semibold hover:shadow-lg transition-all">
                       Add
                     </button>
@@ -641,7 +641,7 @@ useEffect(() => {
                       <p className="text-gray-500 text-sm text-center py-4">No comments yet</p>
                     )}
                     {selectedTask.comments?.map(c => (
-                      <div key={c._id} className="bg-white/5 rounded-xl p-4 border border-white/10">
+                      <div key={c.id} className="bg-white/5 rounded-xl p-4 border border-white/10">
                         <div className="flex items-center gap-2 mb-2">
                           <div className="w-7 h-7 bg-linear-to-br from-teal-400 to-cyan-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
                             {c.author[0]}
@@ -659,11 +659,11 @@ useEffect(() => {
                     <input
                       value={newComment}
                       onChange={e => setNewComment(e.target.value)}
-                      onKeyDown={e => e.key === "Enter" && addComment(selectedTask.id)}
+                      onKeyDown={e => e.key === "Enter" && addComment(selectedTask._id)}
                       placeholder="Write a comment..."
                       className="flex-1 bg-slate-800/50 border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500/50"
                     />
-                    <button onClick={() => addComment(selectedTask.id)}
+                    <button onClick={() => addComment(selectedTask._id)}
                       className="px-4 py-2.5 bg-linear-to-r from-teal-500 to-cyan-600 text-white rounded-xl text-sm font-semibold hover:shadow-lg transition-all">
                       Post
                     </button>
