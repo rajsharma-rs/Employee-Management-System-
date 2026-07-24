@@ -185,11 +185,23 @@ useEffect(() => {
     if (selectedTask?.id === taskId) setSelectedTask(update(selectedTask));
   };
 
-  const changeStatus = (taskId, status) => {
-    const update = (t) => t.id === taskId ? { ...t, status } : t;
-    setTasks(tasks.map(update));
-    if (selectedTask?.id === taskId) setSelectedTask(prev => ({ ...prev, status }));
-  };
+  const changeStatus = async (taskId, status) => {
+    try {
+      const res = await api.put(`/task/updatetask/${taskId}`,
+        {
+          status,
+        }
+      );
+      setTasks(tasks.map(task =>
+        task._id === taskId ? res.data.task : task
+      ));
+      if (selectedTask?._id === taskId || selectedTask?.id === taskId) {
+        setSelectedTask(res.data.task);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
   const addComment = (taskId) => {
     if (!newComment.trim()) return;
@@ -209,39 +221,55 @@ useEffect(() => {
     setNewSubtask("");
   };
 
-  const deleteTask = (taskId) => {
-    setTasks(tasks.filter(t => t.id !== taskId));
-    if (selectedTask?.id === taskId) setSelectedTask(null);
-    setShowDeleteConfirm(null);
+  const deleteTask = async (taskId) => {
+    try {
+      const res = await api.delete(`/task/deletetask/${taskId}`, {
+        withCredentials: true,
+      });
+      setTasks(tasks.filter(t => t._id !== taskId));
+      if (selectedTask?._id === taskId) {
+        setSelectedTask(null);
+      }
+      setShowDeleteConfirm(null);
+    } catch (error) {
+      console.log(error);
+    }
   };
-      const saveTask = async () => {
+
+  const saveTask = async () => {
     if (!form.title.trim()) return;
-    
+
     if (editingTask) {
-      setTasks(tasks.map(t => t.id === editingTask ? { ...t, ...form } : t));
-      if (selectedTask?.id === editingTask) setSelectedTask(prev => ({ ...prev, ...form }));
+      try {
+        const res = await api.put(`/task/updatetask/${editingTask}`, form);
+        const updatedTask = res.data.task;
+        setTasks(tasks.map(task => (task._id === editingTask || task.id === editingTask) ? updatedTask : task));
+        if (selectedTask?._id === editingTask || selectedTask?.id === editingTask) {
+          setSelectedTask(updatedTask);
+        }
+      } catch (error) {
+        console.error("task update failed", error);
+        return;
+      }
     } else {
       try {
         // Send the form data to your backend API
         const res = await api.post('/task/addtask', form);
-        
+
         // Use the task returned from the server (which includes DB id, assignedby, etc.)
         const savedTask = res.data.task;
         setTasks([...tasks, savedTask]);
-        
       } catch (error) {
         console.error("task is not valid", error);
         return; // Stop execution if the request failed so local state doesn't desync
       }
     }
-    
+
     setForm(emptyForm);
     setEditingTask(null);
     setShowAddModal(false);
   };
 
- 
-      
   const openEdit = (task) => {
     setForm({ title: task.title, description: task.description, priority: task.priority,
               status: task.status, dueDate: task.dueDate, category: task.category, assignedBy: task.assignedBy });
@@ -419,7 +447,7 @@ useEffect(() => {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                         </svg>
                       </button>
-                      <button onClick={() => setShowDeleteConfirm(task._id)} className="p-1.5 text-gray-400 hover:text-red-400 transition-colors">
+                      <button onClick={() => setShowDeleteConfirm(task)} className="p-1.5 text-gray-400 hover:text-red-400 transition-colors">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
@@ -543,7 +571,7 @@ useEffect(() => {
                     {(["pending","in-progress","completed"])?.map(s => (
                       <button
                         key={s}
-                        onClick={() => changeStatus(selectedTask.id, s)}
+                        onClick={() => changeStatus(selectedTask._id, s)}
                         className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${selectedTask.status === s
                           ? "bg-linear-to-r from-teal-500 to-cyan-600 text-white"
                           : "bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10"}`}
@@ -728,7 +756,7 @@ useEffect(() => {
           */}
         {showDeleteConfirm && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowDeleteConfirm(null)} />
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowDeleteConfirm(task._id)} />
             <div className="relative w-full max-w-sm bg-slate-900 rounded-2xl border border-white/10 shadow-2xl fade-in p-6">
               <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg className="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -742,7 +770,7 @@ useEffect(() => {
                   className="flex-1 py-3 bg-white/5 border border-white/10 text-white rounded-xl font-semibold hover:bg-white/10 transition-all">
                   Cancel
                 </button>
-                <button onClick={() => deleteTask(showDeleteConfirm)}
+                <button onClick={() => deleteTask(showDeleteConfirm._id)}
                   className="flex-1 py-3 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-600 transition-all">
                   Delete
                 </button>
