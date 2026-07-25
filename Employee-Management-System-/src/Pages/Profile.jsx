@@ -48,12 +48,13 @@ export default function ProfilePage() {
     browserAlerts: true,
     weeklyDigest:  false,
   });
-  const fileRef = useRef();
+  const fileRef = useRef(null);
+  
 
-  const showToast = (msg, type="success") => {
-    setToast({ msg, type });
-    setTimeout(() => setToast(null), 3000);
-  };
+  function showToast(msg, type = "success") {
+  setToast({ msg, type });
+  setTimeout(() => setToast(), 3000);
+}
   const fetchProfile = async () => {
     try {
       const res = await api.get('/profile/profile',{
@@ -71,35 +72,59 @@ export default function ProfilePage() {
   }, []
 );
 
-  const saveProfile = () => {
-    if (!draft.fullName.trim() || !draft.email.trim()) {
-      showToast("Name and email are required", "error"); return;
-    }
-    setProfile(draft);
+  const saveProfile = async () => {
+    try {
+      const res = await api.put("/profile/editprofile",
+        draft,
+        {
+          withCredentials:true,
+          
+        }
+      );
+      console.log(res.data);
+     setProfile(draft);
     setEditMode(false);
     showToast("✅ Profile updated successfully!");
-  };
+  } catch (error){
+    console.log(error.response?.data||error);
+  }}
 
   const cancelEdit = () => {
     setDraft(profile);
     setEditMode(false);
   };
+const addSkill = () => {
+  setDraft((prev) => ({
+    ...prev,
+    skillsAndExpertise: [
+      ...(prev.skillsAndExpertise || []),
+      ""
+    ]
+  }));
+};
+  
+  const removeSkill = (sk) => setDraft(d => ({ ...d, skillsAndExpertise: d.skills.filter(x => x !== sk) }));
 
-  const addSkill = () => {
-    const s = newSkill.trim();
-    if (!s || draft.skills.includes(s)) return;
-    setDraft(d => ({ ...d, skills: [...d.skills, s] }));
-    setNewSkill("");
-  };
-
-  const removeSkill = (sk) => setDraft(d => ({ ...d, skills: d.skills.filter(x => x !== sk) }));
-
-  const changePassword = () => {
+  const changePassword = async () => {
     setPwError("");
     if (!pwForm.current) { setPwError("Enter current password"); return; }
     if (pwForm.next.length < 6) { setPwError("New password must be 6+ characters"); return; }
     if (pwForm.next !== pwForm.confirm) { setPwError("Passwords don't match"); return; }
-    setPwForm({ current:"", next:"", confirm:"" });
+    try {
+      const res = await api.put("/profile/security",
+        {
+          oldPassword: pwForm.current,
+          newPassword: pwForm.next,
+        },
+        {withCredentials:true,}
+      );
+      showToast(res.data);
+setPwForm({ current:"", next:"", confirm:"" });
+    }
+     catch (error){
+      setPwError(error.response?.data?.error||"pw update failed");
+     }
+    
     showToast("🔒 Password changed successfully!");
   };
 
@@ -200,20 +225,7 @@ export default function ProfilePage() {
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                         </svg>
-                        {profile?.department}
-                      </span>
-                      <span className="flex items-center gap-1.5 text-gray-400 text-sm">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                        {profile?.location}
-                      </span>
-                      <span className="flex items-center gap-1.5 text-gray-400 text-sm">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
-                        </svg>
-                        {profile?.id}
+                        
                       </span>
                     </div>
                   </div>
@@ -232,7 +244,7 @@ export default function ProfilePage() {
                           className="px-5 py-2.5 bg-white/5 border border-white/10 text-white rounded-xl font-semibold hover:bg-white/10 transition-all">
                           Cancel
                         </button>
-                        <button onClick={saveProfile}
+                        <button onClick={() => { console.log("save clicked"); saveProfile(); }}
                           className="flex items-center gap-2 px-5 py-2.5 bg-linear-to-r from-teal-500 to-cyan-600 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-teal-500/30 transition-all">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -299,7 +311,7 @@ export default function ProfilePage() {
                 <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6">
                   <h2 className="text-2xl font-bold text-white mb-4">Skills & Expertise</h2>
                   <div className="flex flex-wrap gap-3 mb-4">
-                    {(editMode ? draft : profile)?.skills?.map(sk => (
+                    {(editMode ? draft : profile)?.skillsAndExpertise?.map(sk => (
                       <div key={sk} className="skill-tag flex items-center gap-2 bg-linear-to-r from-teal-500/20 to-cyan-500/20 border border-teal-500/30 text-teal-300 px-4 py-2 rounded-xl text-sm font-medium">
                         {sk}
                         {editMode && (
@@ -400,7 +412,7 @@ export default function ProfilePage() {
                     className="px-5 py-2.5 bg-white/5 border border-white/10 text-white rounded-xl font-semibold hover:bg-white/10 transition-all text-sm">
                     Reset
                   </button>
-                  <button onClick={saveProfile}
+                  <button onClick={() => { console.log("save clicked"); saveProfile(); }}
                     className="flex items-center gap-2 px-5 py-2.5 bg-linear-to-r from-teal-500 to-cyan-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all text-sm">
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />

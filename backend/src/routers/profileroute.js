@@ -26,7 +26,7 @@ profileroute.get('/profile', auth, async (req, res) => {
 
 profileroute.put('/editprofile', auth, async (req, res) => {
     try {
-        const { firstName, lastName, bio, age, skillsAndExpertise, role, profilepicture, avatarcolor } = req.body;
+        const { fullName,  bio, age, skillsAndExpertise, role, profilepicture, avatarcolor } = req.body;
         const userId = req.user._id;
         if (!userId) {
             return res.status(400).json({ error: 'User ID is required' });
@@ -42,13 +42,11 @@ profileroute.put('/editprofile', auth, async (req, res) => {
             return res.status(404).json({ error: 'Profile not found' });
         }
 
-        user.firstName = firstName || user.firstName;
-        user.lastName = lastName || user.lastName;
+        user.fullName = fullName || user.fullName;
         user.age = age || user.age; 
         profile.bio = bio || profile.bio;
         profile.skillsAndExpertise = skillsAndExpertise || profile.skillsAndExpertise;
         profile.role = role || profile.role;
-        profile.joindate = joindate || profile.joindate;
         profile.profilepicture = profilepicture || profile.profilepicture;
         profile.avatarcolor = avatarcolor || profile.avatarcolor;
 
