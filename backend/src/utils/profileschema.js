@@ -19,6 +19,10 @@ const profileSchema = new mongoose.Schema({
         type: String,
         default: "employee"
     },
+    joindate: {
+        type: Date,
+        default: Date.now,
+    },
     profilepicture: {
         type: String,
         default: ""

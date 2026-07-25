@@ -48,6 +48,7 @@ profileroute.put('/editprofile', auth, async (req, res) => {
         profile.bio = bio || profile.bio;
         profile.skillsAndExpertise = skillsAndExpertise || profile.skillsAndExpertise;
         profile.role = role || profile.role;
+        profile.joindate = joindate || profile.joindate;
         profile.profilepicture = profilepicture || profile.profilepicture;
         profile.avatarcolor = avatarcolor || profile.avatarcolor;
 

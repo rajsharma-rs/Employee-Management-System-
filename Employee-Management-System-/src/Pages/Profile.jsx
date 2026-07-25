@@ -1,25 +1,20 @@
 import React from "react";
-import { useState, useRef } from "react";
+import { useState, useRef , useEffect} from "react";
+import api from "../api"
 
 const INITIAL_PROFILE = {
-  firstName:   "John",
-  lastName:    "Doe",
-  email:       "john.doe@company.com",
-  phone:       "+1 (555) 234-5678",
-  department:  "Engineering",
-  role:        "Software Developer",
-  employeeId:  "EMP-00124",
-  joinDate:    "2022-03-15",
-  location:    "New York, USA",
-  manager:     "Alex Smith",
-  bio:         "Passionate software developer with 4+ years of experience in building scalable web applications. Love clean code, great UX, and strong coffee.",
-  skills:      ["React.js", "Node.js", "TypeScript", "Tailwind CSS", "MongoDB", "Docker"],
-  social: {
-    linkedin: "linkedin.com/in/johndoe",
-    github:   "github.com/johndoe",
-    twitter:  "@johndoe",
-  },
-};
+  fullName: "",
+  email:       "",
+  age: "",
+  avatarcolor: "",
+  role:        "",
+profilepicture:"",
+  joindate:    "",
+  bio:         "",
+  skillsAndExpertise:      [""],
+  
+  };
+
 
 const ACTIVITY = [
   { id:1, icon:"M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z",  color:"from-green-400 to-emerald-600", text:'Completed task "Q4 Sales Report"',              time:"2 hours ago"  },
@@ -59,9 +54,25 @@ export default function ProfilePage() {
     setToast({ msg, type });
     setTimeout(() => setToast(null), 3000);
   };
+  const fetchProfile = async () => {
+    try {
+      const res = await api.get('/profile/profile',{
+        withCredentials: true,
+      });
+      setProfile(res.data);
+      
+      setDraft(res.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  useEffect(() => {
+    fetchProfile();
+  }, []
+);
 
   const saveProfile = () => {
-    if (!draft.firstName.trim() || !draft.email.trim()) {
+    if (!draft.fullName.trim() || !draft.email.trim()) {
       showToast("Name and email are required", "error"); return;
     }
     setProfile(draft);
@@ -92,7 +103,8 @@ export default function ProfilePage() {
     showToast("🔒 Password changed successfully!");
   };
 
-  const initials = `${profile.firstName[0]}${profile.lastName[0]}`;
+  const names = profile?.fullName?.split(" ") || [];
+  
   const inputCls = "w-full bg-slate-800/60 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500/50 transition-all text-sm";
 
   const bgOptions = [
@@ -163,7 +175,7 @@ export default function ProfilePage() {
               {/* Avatar */}
               <div className="relative shrink-0">
                 <div className={`w-32 h-32 rounded-3xl bg-linear-to-br{avatarBg} flex items-center justify-center text-4xl font-bold text-white shadow-2xl ring-4 ring-slate-900`}>
-                  {initials}
+                  {}
                 </div>
                 <button
                   onClick={() => fileRef.current.click()}
@@ -181,27 +193,27 @@ export default function ProfilePage() {
               <div className="flex-1">
                 <div className="flex items-start justify-between gap-4 flex-wrap">
                   <div>
-                    <h1 className="text-4xl font-bold text-white mb-1">{profile.firstName} {profile.lastName}</h1>
-                    <p className="text-teal-400 font-semibold text-lg">{profile.role}</p>
+                    <h1 className="text-4xl font-bold text-white mb-1">{profile?.fullName} </h1>
+                    <p className="text-teal-400 font-semibold text-lg">{profile?.role}</p>
                     <div className="flex items-center gap-4 mt-2 flex-wrap">
                       <span className="flex items-center gap-1.5 text-gray-400 text-sm">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                         </svg>
-                        {profile.department}
+                        {profile?.department}
                       </span>
                       <span className="flex items-center gap-1.5 text-gray-400 text-sm">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
-                        {profile.location}
+                        {profile?.location}
                       </span>
                       <span className="flex items-center gap-1.5 text-gray-400 text-sm">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
                         </svg>
-                        {profile.employeeId}
+                        {profile?.id}
                       </span>
                     </div>
                   </div>
@@ -272,14 +284,14 @@ export default function ProfilePage() {
                   <h2 className="text-2xl font-bold text-white mb-4">About</h2>
                   {editMode ? (
                     <textarea
-                      value={draft.bio}
+                      value={draft?.bio}
                       onChange={e => setDraft(d => ({...d, bio:e.target.value}))}
                       rows={4}
                       className={inputCls + " resize-none"}
                       placeholder="Write something about yourself..."
                     />
                   ) : (
-                    <p className="text-gray-300 leading-relaxed">{profile.bio}</p>
+                    <p className="text-gray-300 leading-relaxed">{profile?.bio}</p>
                   )}
                 </div>
 
@@ -287,7 +299,7 @@ export default function ProfilePage() {
                 <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6">
                   <h2 className="text-2xl font-bold text-white mb-4">Skills & Expertise</h2>
                   <div className="flex flex-wrap gap-3 mb-4">
-                    {(editMode ? draft : profile).skills.map(sk => (
+                    {(editMode ? draft : profile)?.skills?.map(sk => (
                       <div key={sk} className="skill-tag flex items-center gap-2 bg-linear-to-r from-teal-500/20 to-cyan-500/20 border border-teal-500/30 text-teal-300 px-4 py-2 rounded-xl text-sm font-medium">
                         {sk}
                         {editMode && (
@@ -341,11 +353,11 @@ export default function ProfilePage() {
                   <h2 className="text-2xl font-bold text-white mb-4">Contact Info</h2>
                   <div className="space-y-4">
                     {[
-                      { icon:"M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z", label:"Email",    value:profile.email  },
-                      { icon:"M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z", label:"Phone",    value:profile.phone  },
-                      { icon:"M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0zM15 11a3 3 0 11-6 0 3 3 0 016 0z", label:"Location",  value:profile.location },
-                      { icon:"M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z", label:"Manager",   value:profile.manager  },
-                      { icon:"M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z", label:"Joined",    value:profile.joinDate },
+                      { icon:"M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z", label:"email",    value:profile?.email  },
+                      
+                      
+                      { icon:"M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z", label:"Manager",   value:profile?.manager  },
+                      { icon:"M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z", label:"Joined",    value:profile?.joindate },
                     ].map(item => (
                       <div key={item.label} className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-white/5 border border-white/10 rounded-xl flex items-center justify-center shrink-0">
@@ -362,27 +374,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                {/* Social Links */}
-                <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6">
-                  <h2 className="text-2xl font-bold text-white mb-4">Social Links</h2>
-                  <div className="space-y-3">
-                    {[
-                      { label:"LinkedIn", icon:"M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z M4 6a2 2 0 100-4 2 2 0 000 4z", value:profile.social.linkedin, color:"text-blue-400" },
-                      { label:"GitHub",   icon:"M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22", value:profile.social.github,   color:"text-white"   },
-                      { label:"Twitter",  icon:"M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z", value:profile.social.twitter,  color:"text-sky-400"  },
-                    ].map(s => (
-                      <div key={s.label} className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/10 hover:border-teal-500/30 transition-all">
-                        <svg className={`w-5 h-5 ${s.color}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={s.icon} />
-                        </svg>
-                        <div>
-                          <p className="text-gray-400 text-xs">{s.label}</p>
-                          <p className="text-white text-sm font-medium">{s.value}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                
 
                 {/* Avatar Color */}
                 <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6">
@@ -427,25 +419,16 @@ export default function ProfilePage() {
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="text-gray-300 text-sm font-medium mb-2 block">First Name</label>
-                      <input value={draft.firstName} onChange={e => setDraft(d=>({...d,firstName:e.target.value}))} className={inputCls} placeholder="First name" />
+                      <label className="text-gray-300 text-sm font-medium mb-2 block">Full Name</label>
+                      <input value={draft.fullName} onChange={e => setDraft(d=>({...d,fullName:e.target.value}))} className={inputCls} placeholder="Full name" />
                     </div>
-                    <div>
-                      <label className="text-gray-300 text-sm font-medium mb-2 block">Last Name</label>
-                      <input value={draft.lastName} onChange={e => setDraft(d=>({...d,lastName:e.target.value}))} className={inputCls} placeholder="Last name" />
-                    </div>
+                    
                     <div>
                       <label className="text-gray-300 text-sm font-medium mb-2 block">Email</label>
                       <input type="email" value={draft.email} onChange={e => setDraft(d=>({...d,email:e.target.value}))} className={inputCls} placeholder="Email address" />
                     </div>
-                    <div>
-                      <label className="text-gray-300 text-sm font-medium mb-2 block">Phone</label>
-                      <input value={draft.phone} onChange={e => setDraft(d=>({...d,phone:e.target.value}))} className={inputCls} placeholder="Phone number" />
-                    </div>
-                    <div className="md:col-span-2">
-                      <label className="text-gray-300 text-sm font-medium mb-2 block">Location</label>
-                      <input value={draft.location} onChange={e => setDraft(d=>({...d,location:e.target.value}))} className={inputCls} placeholder="City, Country" />
-                    </div>
+                    
+                    
                     <div className="md:col-span-2">
                       <label className="text-gray-300 text-sm font-medium mb-2 block">Bio</label>
                       <textarea value={draft.bio} onChange={e => setDraft(d=>({...d,bio:e.target.value}))} rows={4} className={inputCls+" resize-none"} placeholder="Tell something about yourself..." />
@@ -487,24 +470,11 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                {/* Social */}
-                <div>
-                  <h3 className="text-lg font-bold text-teal-400 mb-4 flex items-center gap-2">
-                    <div className="w-1 h-5 bg-linear-to-b from-teal-500 to-cyan-600 rounded-full"></div>
-                    Social Links
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {["linkedin","github","twitter"].map(key => (
-                      <div key={key}>
-                        <label className="text-gray-300 text-sm font-medium mb-2 block capitalize">{key}</label>
-                        <input value={draft.social[key]} onChange={e => setDraft(d=>({...d,social:{...d.social,[key]:e.target.value}}))}
-                          className={inputCls} placeholder={`${key} URL`} />
-                      </div>
-                    ))}
+                
                   </div>
                 </div>
-              </div>
-            </div>
+              
+            
           )}
 
           {/* ══════════ SECURITY TAB ══════════ */}
