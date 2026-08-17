@@ -2,7 +2,7 @@
 const express = require ('express')
 const app = express();
 const cookieParser = require('cookie-parser');
-const { HttpProxy } = require('vite');
+const { HttpProxy } = require('http-proxy');
 const cors = require ('cors') ;
 
 const PORT = 3131; 
