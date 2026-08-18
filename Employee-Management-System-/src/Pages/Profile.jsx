@@ -71,12 +71,10 @@ export default function ProfilePage() {
   }, []
 );
 const saveProfile = async () => {
-  console.log("1. SAVE PROFILE CALLED");
-  console.log("2. API URL:", api.defaults.baseURL);
-  console.log("3. Draft:", draft);
-
+  console.log("1. SAVE START");
+  
   try {
-    console.log("4. ABOUT TO SEND PUT");
+    console.log("BEFORE API CALL, DRAFT:");
 
     const res = await api.put(
       "/profile/editprofile",
@@ -86,7 +84,9 @@ const saveProfile = async () => {
       }
     );
 
-    console.log("5. RESPONSE:", res.data);
+    console.log("AFTER API CALL, RESPONSE:", res.data);
+    console.log("status:", res.status);
+    console.log("data:", res.data);
 
     setProfile(res.data);
     setDraft(res.data);
