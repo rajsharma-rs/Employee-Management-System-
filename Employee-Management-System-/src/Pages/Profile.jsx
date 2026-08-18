@@ -71,14 +71,26 @@ export default function ProfilePage() {
   }, []
 );
 
-  const saveProfile = () => {
-    if (!draft.fullName.trim() || !draft.email.trim()) {
-      showToast("Name and email are required", "error"); return;
-    }
-    setProfile(draft);
+  const saveProfile = async () => {
+  try {
+    const res = await api.put(
+      "/profile/editprofile",
+      draft,
+      {
+        withCredentials: true,
+      }
+    );
+
+    console.log(res.data);
+
+    setProfile(res.data);
+    setDraft(res.data);
     setEditMode(false);
     showToast("✅ Profile updated successfully!");
-  };
+  } catch (error) {
+    console.log(error.response?.data || error);
+  }
+};
 
   const cancelEdit = () => {
     setDraft(profile);
@@ -94,14 +106,48 @@ export default function ProfilePage() {
 
   const removeSkill = (sk) => setDraft(d => ({ ...d, skills: d.skills.filter(x => x !== sk) }));
 
-  const changePassword = () => {
-    setPwError("");
-    if (!pwForm.current) { setPwError("Enter current password"); return; }
-    if (pwForm.next.length < 6) { setPwError("New password must be 6+ characters"); return; }
-    if (pwForm.next !== pwForm.confirm) { setPwError("Passwords don't match"); return; }
-    setPwForm({ current:"", next:"", confirm:"" });
-    showToast("🔒 Password changed successfully!");
-  };
+const changePassword = async () => {
+  setPwError("");
+
+  if (!pwForm.current) {
+    setPwError("Enter current password");
+    return;
+  }
+
+  if (pwForm.next.length < 6) {
+    setPwError("New password must be 6+ characters");
+    return;
+  }
+
+  if (pwForm.next !== pwForm.confirm) {
+    setPwError("Passwords don't match");
+    return;
+  }
+
+  try {
+    const res = await api.put(
+      "/profile/security",
+      {
+        oldPassword: pwForm.current,
+        newPassword: pwForm.next,
+      },
+      {
+        withCredentials: true,
+      }
+    );
+
+    showToast(res.data.message);
+
+    setPwForm({
+      current: "",
+      next: "",
+      confirm: "",
+    });
+
+  } catch (error) {
+    setPwError(error.response?.data?.error || "Password update failed");
+  }
+};
 
   const names = profile?.fullName?.split(" ") || [];
   

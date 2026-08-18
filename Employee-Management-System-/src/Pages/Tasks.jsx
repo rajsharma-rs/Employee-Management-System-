@@ -426,7 +426,7 @@ useEffect(() => {
             <div className={view === "grid" ? "grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" : "flex flex-col gap-4"}>
               {filtered?.map((task, i) => (
                 <div
-                  key={task.id}
+                  key={task._id}
                   className={`bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-6 hover:bg-white/8 hover:-translate-y-1 hover:border-teal-500/30 transition-all cursor-pointer fade-in-up`}
                   style={{ animationDelay: `${i * 0.05}s`, opacity: 0 }}
                   onClick={() => setSelectedTask(task)}
