@@ -71,11 +71,10 @@ export default function ProfilePage() {
   }, []
 );
 const saveProfile = async () => {
-  console.log("1. SAVE START");
+  
   
   try {
-    console.log("BEFORE API CALL, DRAFT:");
-
+    
     const res = await api.put(
       "/profile/editprofile",
       draft,
@@ -84,17 +83,14 @@ const saveProfile = async () => {
       }
     );
 
-    console.log("AFTER API CALL, RESPONSE:", res.data);
-    console.log("status:", res.status);
-    console.log("data:", res.data);
+    
 
     setProfile(res.data);
     setDraft(res.data);
     setEditMode(false);
     showToast("✅ Profile updated successfully!");
   } catch (error) {
-    console.log("6. ERROR:", error);
-    console.log("7. RESPONSE:", error.response?.data);
+    
   }
 };
 
