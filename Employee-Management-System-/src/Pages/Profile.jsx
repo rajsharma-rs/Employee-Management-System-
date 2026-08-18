@@ -70,9 +70,14 @@ export default function ProfilePage() {
     fetchProfile();
   }, []
 );
+const saveProfile = async () => {
+  console.log("1. SAVE PROFILE CALLED");
+  console.log("2. API URL:", api.defaults.baseURL);
+  console.log("3. Draft:", draft);
 
-  const saveProfile = async () => {
   try {
+    console.log("4. ABOUT TO SEND PUT");
+
     const res = await api.put(
       "/profile/editprofile",
       draft,
@@ -81,14 +86,15 @@ export default function ProfilePage() {
       }
     );
 
-    console.log(res.data);
+    console.log("5. RESPONSE:", res.data);
 
     setProfile(res.data);
     setDraft(res.data);
     setEditMode(false);
     showToast("✅ Profile updated successfully!");
   } catch (error) {
-    console.log(error.response?.data || error);
+    console.log("6. ERROR:", error);
+    console.log("7. RESPONSE:", error.response?.data);
   }
 };
 
@@ -107,6 +113,7 @@ export default function ProfilePage() {
   const removeSkill = (sk) => setDraft(d => ({ ...d, skills: d.skills.filter(x => x !== sk) }));
 
 const changePassword = async () => {
+  console.log("Changing password:", pwForm);
   setPwError("");
 
   if (!pwForm.current) {
