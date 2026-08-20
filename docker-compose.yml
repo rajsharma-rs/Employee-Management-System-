@@ -1,13 +1,12 @@
 services:
   backend:
-  image: rajsharmaa/ens-backend:1.2
-  ports:
-    - "3131:3131"
+    image: rajsharmaa/ems-backend:1.2
+    ports:
+      - "3131:3131"
 
-
-    frontend:
-  image: rajsharmaa/ens-frontend:1.2.2
-  ports:
-    - "80:80"
+  frontend:
+    image: rajsharmaa/ems-frontend:1.2.2
+    ports:
+      - "80:80"
     depends_on:
       - backend
