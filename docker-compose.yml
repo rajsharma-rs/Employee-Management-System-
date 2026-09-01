@@ -5,7 +5,7 @@ services:
     ports:
       - "3131:3131"
     environment:
-      MONGO_URI: mongodb://mongodb:27017/ems
+      MONGO_URI: mongodb://mongodb:27017/Cluster0
     depends_on:
       - mongodb
 
