@@ -1,5 +1,4 @@
 services:
-
   backend:
     image: rajsharmaa/ems-backend:1.2
     ports:
@@ -17,14 +16,14 @@ services:
       - backend
 
   mongodb:
-  image: mongo:8
-  container_name: mongodb
-  ports:
-    - "27017:27017"
-  environment:
-    GLIBC_TUNABLES: glibc.pthread.rseq=1
-  volumes:
-    - mongodb_data:/data/db
+    image: mongo:8
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      GLIBC_TUNABLES: glibc.pthread.rseq=1
+    volumes:
+      - mongodb_data:/data/db
 
 volumes:
   mongodb_data:
