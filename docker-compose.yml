@@ -1,8 +1,13 @@
 services:
+
   backend:
     image: rajsharmaa/ems-backend:1.2
     ports:
       - "3131:3131"
+    environment:
+      MONGO_URI: mongodb://mongodb:27017/ems
+    depends_on:
+      - mongodb
 
   frontend:
     image: rajsharmaa/ems-frontend:1.2.2
@@ -10,3 +15,14 @@ services:
       - "80:80"
     depends_on:
       - backend
+
+  mongodb:
+    image: mongo
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+
+volumes:
+  mongodb_data:
