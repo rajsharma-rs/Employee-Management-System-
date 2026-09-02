@@ -9,7 +9,7 @@ services:
       - mongodb
 
   frontend:
-    image: rajsharmaa/ems-frontend:1.2.2
+    image: rajsharmaa/ems-frontend:1.2.3
     ports:
       - "80:80"
     depends_on:
