@@ -1,6 +1,6 @@
 services:
   backend:
-    image: rajsharmaa/ems-backend:1.2
+    image: rajsharmaa/ems-backend:1.2.1
     ports:
       - "3131:3131"
     environment:
