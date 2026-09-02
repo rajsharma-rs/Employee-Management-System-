@@ -1,9 +1,13 @@
-const  mongoose = require("mongoose");
+const mongoose = require("mongoose");
 
+const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/test";
 
-mongoose.connect("mongodb+srv://RAJSHARMA:sarmaa3109@cluster0.m6lkti4.mongodb.net/?appName=Cluster0")
-.then(() => console.log("connected"))
-.catch(err => console.log("error;" , err.message));
+mongoose.connect(MONGO_URI)
+    .then(() => console.log("MongoDB connected"))
+    .catch(err => {
+        console.error("MongoDB connection error:", err);
+        process.exit(1);
+    });
 
 const userSchema = new mongoose.Schema({
     fullName: {
@@ -25,12 +29,10 @@ const userSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: true, 
-        
+        required: true
     }
-}); 
+});
 
 const User = mongoose.model("User", userSchema);
- 
-module.exports = User; 
-   
+
+module.exports = User;
