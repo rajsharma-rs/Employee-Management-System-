@@ -18,3 +18,5 @@ If you are developing a production application, we recommend using TypeScript wi
 
 
 
+
+jenkins automatic trigger ci/cd 
