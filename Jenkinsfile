@@ -11,7 +11,6 @@ pipeline {
         BACKEND_IMAGE  = 'rajsharmaa/ems-backend'
         FRONTEND_IMAGE = 'rajsharmaa/ems-frontend'
 
-        // Jenkins Build Number as Docker Image Tag
         IMAGE_TAG = "${BUILD_NUMBER}"
 
 
@@ -42,7 +41,7 @@ pipeline {
 
 
         // ==========================================
-        // 2. SONARQUBE ANALYSIS - DEBUG
+        // 2. SONARQUBE - DEBUG
         // ==========================================
 
         stage('SonarQube Analysis') {
@@ -51,19 +50,52 @@ pipeline {
 
                 script {
 
-                    // Get SonarScanner configured in:
-                    // Manage Jenkins → Tools → SonarQube Scanner
-
                     def scannerHome = tool 'SonarScanner'
 
 
                     echo "======================================"
                     echo "SonarScanner Location"
-                    echo "${scannerHome}"
                     echo "======================================"
 
+                    echo "${scannerHome}"
+
+
+                    // ------------------------------------------
+                    // TEST 1: Check scanner installation
+                    // ------------------------------------------
+
+                    sh """
+                        echo "======================================"
+                        echo "TEST 1: Checking SonarScanner"
+                        echo "======================================"
+
+                        echo "Scanner directory:"
+                        ls -la "${scannerHome}"
+
+                        echo ""
+                        echo "Scanner bin directory:"
+                        ls -la "${scannerHome}/bin"
+
+                        echo ""
+                        echo "SonarScanner version:"
+                        "${scannerHome}/bin/sonar-scanner" --version
+
+                        echo ""
+                        echo "TEST 1 PASSED"
+                        echo "======================================"
+                    """
+
+
+                    // ------------------------------------------
+                    // TEST 2: Get SonarQube environment
+                    // ------------------------------------------
 
                     withSonarQubeEnv('sonarqube') {
+
+                        echo "======================================"
+                        echo "SonarQube Environment Loaded"
+                        echo "======================================"
+
 
                         withCredentials([
                             string(
@@ -72,38 +104,25 @@ pipeline {
                             )
                         ]) {
 
+
+                            // ------------------------------------------
+                            // TEST 3: Run SonarScanner
+                            // ------------------------------------------
+
                             sh """
-                                set -e
-
                                 echo "======================================"
-                                echo "Checking SonarScanner Installation"
+                                echo "TEST 3: Running SonarQube Scanner"
                                 echo "======================================"
 
-                                ls -la "${scannerHome}"
-
-                                echo "--------------------------------------"
-
-                                ls -la "${scannerHome}/bin"
-
-
-                                echo "======================================"
-                                echo "SonarScanner Version"
-                                echo "======================================"
-
-                                "${scannerHome}/bin/sonar-scanner" --version
-
-
-                                echo "======================================"
-                                echo "SonarQube Server URL"
-                                echo "======================================"
-
+                                echo "SonarQube URL:"
                                 echo "\$SONAR_HOST_URL"
 
+                                echo ""
+                                echo "Workspace:"
+                                pwd
 
-                                echo "======================================"
-                                echo "Running SonarQube Analysis"
-                                echo "======================================"
-
+                                echo ""
+                                echo "Running scanner..."
 
                                 "${scannerHome}/bin/sonar-scanner" \
                                     -Dsonar.projectKey=employee-management-system \
@@ -112,21 +131,18 @@ pipeline {
                                     -Dsonar.exclusions='**/node_modules/**,**/dist/**,**/build/**,**/.git/**' \
                                     -Dsonar.token="\$SONAR_TOKEN"
 
-
+                                echo ""
                                 echo "======================================"
-                                echo "Checking SonarQube Report"
+                                echo "SonarScanner Command Finished"
                                 echo "======================================"
 
+                                echo ""
+                                echo "Checking workspace..."
 
-                                echo "Workspace files:"
                                 ls -la
 
-
-                                echo "--------------------------------------"
-
-
-                                echo "Checking .scannerwork directory:"
-
+                                echo ""
+                                echo "Checking .scannerwork..."
 
                                 if [ -d ".scannerwork" ]; then
 
@@ -140,10 +156,20 @@ pipeline {
 
                                 fi
 
+                                echo ""
+                                echo "Checking report-task.txt..."
 
-                                echo "======================================"
-                                echo "SonarQube Analysis Completed"
-                                echo "======================================"
+                                if [ -f ".scannerwork/report-task.txt" ]; then
+
+                                    echo "report-task.txt FOUND"
+
+                                    cat .scannerwork/report-task.txt
+
+                                else
+
+                                    echo "report-task.txt NOT FOUND"
+
+                                fi
                             """
                         }
                     }
@@ -153,7 +179,7 @@ pipeline {
 
 
         // ==========================================
-        // 3. SONARQUBE QUALITY GATE
+        // 3. QUALITY GATE
         // ==========================================
 
         stage('Quality Gate') {
@@ -174,7 +200,7 @@ pipeline {
 
 
         // ==========================================
-        // 4. BUILD BACKEND DOCKER IMAGE
+        // 4. BUILD BACKEND IMAGE
         // ==========================================
 
         stage('Build Backend Image') {
@@ -198,7 +224,7 @@ pipeline {
 
 
         // ==========================================
-        // 5. BUILD FRONTEND DOCKER IMAGE
+        // 5. BUILD FRONTEND IMAGE
         // ==========================================
 
         stage('Build Frontend Image') {
@@ -247,27 +273,21 @@ pipeline {
                             --password-stdin
 
 
-                        echo "======================================"
-                        echo "Pushing Backend Image"
-                        echo "======================================"
+                        echo "Pushing Backend Image..."
 
                         docker push \
                             ${BACKEND_IMAGE}:${IMAGE_TAG}
 
 
-                        echo "======================================"
-                        echo "Pushing Frontend Image"
-                        echo "======================================"
+                        echo "Pushing Frontend Image..."
 
                         docker push \
                             ${FRONTEND_IMAGE}:${IMAGE_TAG}
 
 
-                        echo "======================================"
-                        echo "Logging out from Docker Hub"
-                        echo "======================================"
-
                         docker logout
+
+                        echo "Docker images pushed successfully."
                     '''
                 }
             }
@@ -286,7 +306,7 @@ pipeline {
 
                     sh '''
                         echo "======================================"
-                        echo "Deploying Application to EC2"
+                        echo "Deploying Application"
                         echo "======================================"
 
 
@@ -295,65 +315,47 @@ pipeline {
 
                             set -e
 
-
-                            echo "======================================"
-                            echo "Application Directory"
-                            echo "======================================"
-
                             cd ${EC2_APP_DIR}
 
+                            echo "Application directory:"
                             pwd
 
 
-                            echo "======================================"
-                            echo "Updating Backend Image"
-                            echo "======================================"
+                            echo "Updating backend image..."
 
                             sed -i \
                                 's|rajsharmaa/ems-backend:.*|rajsharmaa/ems-backend:${IMAGE_TAG}|' \
                                 docker-compose.yml
 
 
-                            echo "======================================"
-                            echo "Updating Frontend Image"
-                            echo "======================================"
+                            echo "Updating frontend image..."
 
                             sed -i \
                                 's|rajsharmaa/ems-frontend:.*|rajsharmaa/ems-frontend:${IMAGE_TAG}|' \
                                 docker-compose.yml
 
 
-                            echo "======================================"
-                            echo "Pulling New Images"
-                            echo "======================================"
+                            echo "Pulling new images..."
 
                             docker compose pull
 
 
-                            echo "======================================"
-                            echo "Starting Updated Containers"
-                            echo "======================================"
+                            echo "Starting containers..."
 
                             docker compose up -d
 
 
-                            echo "======================================"
-                            echo "Container Status"
-                            echo "======================================"
+                            echo "Container status:"
 
                             docker compose ps
 
 
-                            echo "======================================"
-                            echo "Cleaning Unused Docker Images"
-                            echo "======================================"
+                            echo "Cleaning unused images..."
 
                             docker image prune -f
 
 
-                            echo "======================================"
-                            echo "Deployment Completed Successfully"
-                            echo "======================================"
+                            echo "Deployment completed."
 
                         EOF
                     '''
@@ -364,7 +366,7 @@ pipeline {
 
 
     // ==========================================
-    // POST ACTIONS
+    // POST
     // ==========================================
 
     post {
@@ -396,16 +398,7 @@ pipeline {
              CI/CD PIPELINE FAILED
             ==========================================
 
-            Check Jenkins Console Output.
-
-            Possible failure points:
-
-            1. SonarQube Analysis
-            2. SonarQube Quality Gate
-            3. Docker Build
-            4. Docker Hub Push
-            5. SSH Connection
-            6. Docker Compose Deployment
+            Check the Jenkins Console Output.
 
             ==========================================
             """
