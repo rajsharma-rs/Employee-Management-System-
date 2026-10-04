@@ -42,7 +42,7 @@ pipeline {
 
 
         // ==========================================
-        // 2. SONARQUBE ANALYSIS
+        // 2. SONARQUBE ANALYSIS - DEBUG
         // ==========================================
 
         stage('SonarQube Analysis') {
@@ -53,7 +53,14 @@ pipeline {
 
                     // Get SonarScanner configured in:
                     // Manage Jenkins → Tools → SonarQube Scanner
+
                     def scannerHome = tool 'SonarScanner'
+
+
+                    echo "======================================"
+                    echo "SonarScanner Location"
+                    echo "${scannerHome}"
+                    echo "======================================"
 
 
                     withSonarQubeEnv('sonarqube') {
@@ -66,16 +73,73 @@ pipeline {
                         ]) {
 
                             sh """
+                                set -e
+
+                                echo "======================================"
+                                echo "Checking SonarScanner Installation"
+                                echo "======================================"
+
+                                ls -la "${scannerHome}"
+
+                                echo "--------------------------------------"
+
+                                ls -la "${scannerHome}/bin"
+
+
+                                echo "======================================"
+                                echo "SonarScanner Version"
+                                echo "======================================"
+
+                                "${scannerHome}/bin/sonar-scanner" --version
+
+
+                                echo "======================================"
+                                echo "SonarQube Server URL"
+                                echo "======================================"
+
+                                echo "\$SONAR_HOST_URL"
+
+
                                 echo "======================================"
                                 echo "Running SonarQube Analysis"
                                 echo "======================================"
 
-                                ${scannerHome}/bin/sonar-scanner \
+
+                                "${scannerHome}/bin/sonar-scanner" \
                                     -Dsonar.projectKey=employee-management-system \
                                     -Dsonar.projectName=Employee-Management-System \
                                     -Dsonar.sources=. \
-                                    -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/build/**,**/.git/** \
-                                    -Dsonar.token=\\\$SONAR_TOKEN
+                                    -Dsonar.exclusions='**/node_modules/**,**/dist/**,**/build/**,**/.git/**' \
+                                    -Dsonar.token="\$SONAR_TOKEN"
+
+
+                                echo "======================================"
+                                echo "Checking SonarQube Report"
+                                echo "======================================"
+
+
+                                echo "Workspace files:"
+                                ls -la
+
+
+                                echo "--------------------------------------"
+
+
+                                echo "Checking .scannerwork directory:"
+
+
+                                if [ -d ".scannerwork" ]; then
+
+                                    echo ".scannerwork FOUND"
+
+                                    ls -la .scannerwork
+
+                                else
+
+                                    echo ".scannerwork NOT FOUND"
+
+                                fi
+
 
                                 echo "======================================"
                                 echo "SonarQube Analysis Completed"
