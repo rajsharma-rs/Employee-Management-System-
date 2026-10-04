@@ -4,20 +4,20 @@ pipeline {
 
     environment {
 
-        // ==============================
+        // ==========================================
         // Docker Hub Images
-        // ==============================
+        // ==========================================
 
         BACKEND_IMAGE  = 'rajsharmaa/ems-backend'
         FRONTEND_IMAGE = 'rajsharmaa/ems-frontend'
 
-        // Jenkins build number = image tag
+        // Jenkins Build Number as Docker Image Tag
         IMAGE_TAG = "${BUILD_NUMBER}"
 
 
-        // ==============================
+        // ==========================================
         // Application EC2
-        // ==============================
+        // ==========================================
 
         EC2_USER    = 'ubuntu'
         EC2_HOST    = '13.203.130.223'
@@ -28,60 +28,69 @@ pipeline {
     stages {
 
 
-        // ============================================================
+        // ==========================================
         // 1. CHECKOUT
-        // ============================================================
+        // ==========================================
 
         stage('Checkout') {
 
             steps {
 
                 checkout scm
-
             }
         }
 
 
-        // ============================================================
-        // 2. SONARQUBE CODE ANALYSIS
-        // ============================================================
+        // ==========================================
+        // 2. SONARQUBE ANALYSIS
+        // ==========================================
 
         stage('SonarQube Analysis') {
 
             steps {
 
-                withSonarQubeEnv('sonarqube') {
+                script {
 
-                    withCredentials([
-                        string(
-                            credentialsId: 'sonarqube-token',
-                            variable: 'SONAR_TOKEN'
-                        )
-                    ]) {
+                    // Get SonarScanner configured in:
+                    // Manage Jenkins → Tools → SonarQube Scanner
+                    def scannerHome = tool 'SonarScanner'
 
-                        sh '''
-                            echo "======================================"
-                            echo "Running SonarQube Analysis"
-                            echo "======================================"
 
-                            sonar-scanner \
-                                -Dsonar.projectKey=employee-management-system \
-                                -Dsonar.projectName=Employee-Management-System \
-                                -Dsonar.sources=. \
-                                -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/build/**,**/.git/** \
-                                -Dsonar.token=$SONAR_TOKEN
+                    withSonarQubeEnv('sonarqube') {
 
-                            echo "SonarQube analysis completed."
-                        '''
+                        withCredentials([
+                            string(
+                                credentialsId: 'sonarqube-token',
+                                variable: 'SONAR_TOKEN'
+                            )
+                        ]) {
+
+                            sh """
+                                echo "======================================"
+                                echo "Running SonarQube Analysis"
+                                echo "======================================"
+
+                                ${scannerHome}/bin/sonar-scanner \
+                                    -Dsonar.projectKey=employee-management-system \
+                                    -Dsonar.projectName=Employee-Management-System \
+                                    -Dsonar.sources=. \
+                                    -Dsonar.exclusions=**/node_modules/**,**/dist/**,**/build/**,**/.git/** \
+                                    -Dsonar.token=\\\$SONAR_TOKEN
+
+                                echo "======================================"
+                                echo "SonarQube Analysis Completed"
+                                echo "======================================"
+                            """
+                        }
                     }
                 }
             }
         }
 
 
-        // ============================================================
+        // ==========================================
         // 3. SONARQUBE QUALITY GATE
-        // ============================================================
+        // ==========================================
 
         stage('Quality Gate') {
 
@@ -100,9 +109,9 @@ pipeline {
         }
 
 
-        // ============================================================
+        // ==========================================
         // 4. BUILD BACKEND DOCKER IMAGE
-        // ============================================================
+        // ==========================================
 
         stage('Build Backend Image') {
 
@@ -124,9 +133,9 @@ pipeline {
         }
 
 
-        // ============================================================
+        // ==========================================
         // 5. BUILD FRONTEND DOCKER IMAGE
-        // ============================================================
+        // ==========================================
 
         stage('Build Frontend Image') {
 
@@ -148,9 +157,9 @@ pipeline {
         }
 
 
-        // ============================================================
+        // ==========================================
         // 6. PUSH IMAGES TO DOCKER HUB
-        // ============================================================
+        // ==========================================
 
         stage('Push Images to Docker Hub') {
 
@@ -174,35 +183,36 @@ pipeline {
                             --password-stdin
 
 
-                        echo "Pushing Backend Image..."
+                        echo "======================================"
+                        echo "Pushing Backend Image"
+                        echo "======================================"
 
                         docker push \
                             ${BACKEND_IMAGE}:${IMAGE_TAG}
 
 
-                        echo "Pushing Frontend Image..."
+                        echo "======================================"
+                        echo "Pushing Frontend Image"
+                        echo "======================================"
 
                         docker push \
                             ${FRONTEND_IMAGE}:${IMAGE_TAG}
 
 
-                        echo "Logging out from Docker Hub..."
+                        echo "======================================"
+                        echo "Logging out from Docker Hub"
+                        echo "======================================"
 
                         docker logout
-
-
-                        echo "======================================"
-                        echo "Docker Images Successfully Pushed"
-                        echo "======================================"
                     '''
                 }
             }
         }
 
 
-        // ============================================================
+        // ==========================================
         // 7. DEPLOY TO APPLICATION EC2
-        // ============================================================
+        // ==========================================
 
         stage('Deploy to EC2') {
 
@@ -212,7 +222,7 @@ pipeline {
 
                     sh '''
                         echo "======================================"
-                        echo "Deploying Application"
+                        echo "Deploying Application to EC2"
                         echo "======================================"
 
 
@@ -221,10 +231,13 @@ pipeline {
 
                             set -e
 
+
+                            echo "======================================"
+                            echo "Application Directory"
+                            echo "======================================"
+
                             cd ${EC2_APP_DIR}
 
-
-                            echo "Current directory:"
                             pwd
 
 
@@ -254,7 +267,7 @@ pipeline {
 
 
                             echo "======================================"
-                            echo "Starting Containers"
+                            echo "Starting Updated Containers"
                             echo "======================================"
 
                             docker compose up -d
@@ -286,9 +299,9 @@ pipeline {
     }
 
 
-    // ================================================================
+    // ==========================================
     // POST ACTIONS
-    // ================================================================
+    // ==========================================
 
     post {
 
@@ -322,22 +335,16 @@ pipeline {
             Check Jenkins Console Output.
 
             Possible failure points:
-            - SonarQube Analysis
-            - SonarQube Quality Gate
-            - Docker Build
-            - Docker Hub Push
-            - SSH Connection
-            - Docker Compose Deployment
+
+            1. SonarQube Analysis
+            2. SonarQube Quality Gate
+            3. Docker Build
+            4. Docker Hub Push
+            5. SSH Connection
+            6. Docker Compose Deployment
 
             ==========================================
             """
         }
     }
 }
-
-
-
-
-// ================================================================
-// END OF JENKINSFILE
-// ================================================================
