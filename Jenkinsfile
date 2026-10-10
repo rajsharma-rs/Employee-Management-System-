@@ -357,7 +357,7 @@ pipeline {
 
                             echo "Deployment completed."
 
-                        EOF
+EOF
                     '''
                 }
             }
